@@ -38,6 +38,10 @@ export const router = createBrowserRouter([
         element: <ActivityForm />,
       },
       {
+        path: 'manage/:id',
+        element: <ActivityForm />,
+      },
+      {
         path: 'counter',
         element: <Counter />,
       },
