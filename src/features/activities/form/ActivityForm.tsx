@@ -8,9 +8,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import TextInput from '../../../app/shared/components/TextInput'
 import SelectInput from '../../../app/shared/components/SelectInput'
 import { categoryOptions } from './categoryOptions'
+import DateTimeInput from '../../../app/shared/components/DateTimeInput'
+import LocationInput from '../../../app/shared/components/LocationInput'
 
 export default function ActivityForm() {
-  const { control, reset, handleSubmit } = useForm<ActivitySchema>({
+  const { control, reset, handleSubmit } = useForm({
     mode: 'onTouched',
     resolver: zodResolver(activitySchema),
   })
@@ -19,11 +21,41 @@ export default function ActivityForm() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (activity) reset(activity)
+    if (activity)
+      reset({
+        ...activity,
+        location: {
+          city: activity.city,
+          venue: activity.venue,
+          latitude: activity.latitude,
+          longitude: activity.longitude,
+        },
+      })
   }, [activity, reset])
 
   const onSubmit = (data: ActivitySchema) => {
-    console.log(data)
+    const { location, ...rest } = data
+    const flattenedData = { ...rest, ...location }
+    try {
+      if (activity) {
+        const updateData = {
+          id: activity.id,
+          ...flattenedData,
+        }
+
+        console.log(updateData)
+
+        updateActivity.mutate(updateData, {
+          onSuccess: () => navigate(`/activities/${activity.id}`),
+        })
+      } else {
+        createActivity.mutate(flattenedData, {
+          onSuccess: id => navigate(`/activities/${id}`),
+        })
+      }
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   if (isLoadingActivity) return <Typography>Loading...</Typography>
@@ -42,10 +74,11 @@ export default function ActivityForm() {
       >
         <TextInput label='Title' control={control} name='title' />
         <TextInput label='Description' control={control} name='description' multiline rows={3} />
-        <SelectInput items={categoryOptions} label='Category' control={control} name='category' />
-        <TextInput label='Date' control={control} name='date' />
-        <TextInput label='City' control={control} name='city' />
-        <TextInput label='Venue' control={control} name='venue' />
+        <Box display='flex' gap={3}>
+          <SelectInput items={categoryOptions} label='Category' control={control} name='category' />
+          <DateTimeInput label='Date' control={control} name='date' />
+        </Box>
+        <LocationInput control={control} label='Enter the location' name='location' />
         <Box display='flex' justifyContent='end' gap={3}>
           <Button
             onClick={() => {
