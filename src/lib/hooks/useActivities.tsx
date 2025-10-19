@@ -3,18 +3,20 @@ import agent from '../api/agent'
 import { useLocation } from 'react-router'
 import { UpdateActivitySchema } from '../schemas/updateActivitySchema'
 import { Activity } from '../types'
+import { useAccount } from './useAccount'
 
 export const useActivities = (id?: string) => {
   const queryClient = useQueryClient()
+  const { currentUser } = useAccount()
   const location = useLocation()
 
-  const { data: activities, isPending } = useQuery({
+  const { data: activities, isLoading } = useQuery({
     queryKey: ['activities'],
     queryFn: async () => {
       const response = await agent.get<Activity[]>('/activities')
       return response.data
     }, 
-    enabled: !id && location.pathname == '/activities',
+    enabled: !id && location.pathname == '/activities' && !!currentUser,
     // staleTime: 1000 * 60 * 5 /* Specifies how much we can wait to fetch the data again */
   })
 
@@ -25,7 +27,7 @@ export const useActivities = (id?: string) => {
       return response.data
     },
     // Here we specify that we will only fetch the data if the id exists
-    enabled: !!id,
+    enabled: !!id && !!currentUser,
   })
 
   const createActivity = useMutation({
@@ -69,7 +71,7 @@ export const useActivities = (id?: string) => {
     activities,
     activity,
     isLoadingActivity,
-    isPending,
+    isLoading,
     updateActivity,
     createActivity,
     deleteActivity,

@@ -8,6 +8,9 @@ import Counter from '../../features/counter/Counter'
 import TestErrors from '../../features/errors/TestErrors'
 import NotFound from '../../features/errors/NotFound'
 import ServerError from '../../features/errors/ServerError'
+import LoginForm from '../../features/accounts/LoginForm'
+import RequireAuth from './RequireAuth'
+import RegisterForm from '../../features/accounts/RegisterForm'
 
 export const router = createBrowserRouter([
   // This works as a layout from Next.js OMG so useful
@@ -18,25 +21,32 @@ export const router = createBrowserRouter([
     element: <App />,
     children: [
       {
+        element: <RequireAuth />,
+        children: [
+          // All routes that need authentication go here
+          {
+            path: 'activities',
+            element: <ActivityDashboard />,
+          },
+          {
+            path: 'activities/:id',
+            element: <ActivityDetailsPage />,
+          },
+          {
+            path: 'createActivity',
+            element: <ActivityForm key='create' />,
+          },
+          {
+            path: 'editActivity/:id',
+            element: <ActivityForm />,
+          },
+        ],
+      },
+      {
         path: '',
         element: <HomePage />,
       },
-      {
-        path: 'activities',
-        element: <ActivityDashboard />,
-      },
-      {
-        path: 'activities/:id',
-        element: <ActivityDetailsPage />,
-      },
-      {
-        path: 'createActivity',
-        element: <ActivityForm key='create' />,
-      },
-      {
-        path: 'editActivity/:id',
-        element: <ActivityForm />,
-      },
+
       {
         path: 'manage/:id',
         element: <ActivityForm />,
@@ -58,8 +68,16 @@ export const router = createBrowserRouter([
         element: <ServerError />,
       },
       {
+        path: 'login',
+        element: <LoginForm />,
+      },
+      {
+        path: 'register',
+        element: <RegisterForm />,
+      },
+      {
         path: '*',
-        element: <Navigate replace to='not-found' />,
+        element: <Navigate replace to='/not-found' />,
       },
     ],
   },
